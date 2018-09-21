@@ -40,29 +40,61 @@
 
 			<div class="section" id="academicos">
 				<h5>Escolares</h5>
-				<p>Especialidades <i class="material-icons pointer" onclick="sendFile(8)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Planes especialidad<i class="material-icons pointer" onclick="sendFile(9)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
+				<p>Asignaturas 
+					<i class="material-icons pointer" onclick="sendFile('asignaturas')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('asignaturas')">arrow_downward</i>
+				</p>
+				<p>Especialidades 
+					<i class="material-icons pointer" onclick="sendFile('especialidades')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('especialidades')">arrow_downward</i>
+				</p>
+				<p>Planes especialidad
+					<i class="material-icons pointer" onclick="sendFile(9)">arrow_upward</i>
+					<i class="material-icons pointer">arrow_downward</i>
+				</p>
 			</div>
 			<div class="divider"></div>
 
 			<div class="section" id="academicos">
 				<h5>Configuración</h5>
-				<p>Estados de estudiante <i class="material-icons pointer" onclick="sendFile(1)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Títulos de profesor <i class="material-icons pointer" onclick="sendFile(2)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Tipos de exámenes <i class="material-icons pointer" onclick="sendFile(3)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Oportunidades de clase <i class="material-icons pointer" onclick="sendFile(4)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Niveles y grados <i class="material-icons pointer" onclick="sendFile(5)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Modalidad estudiantes <i class="material-icons pointer" onclick="sendFile(6)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
-				<p>Tipos plan especialidad <i class="material-icons pointer" onclick="sendFile(7)">arrow_upward</i><i class="material-icons pointer">arrow_downward</i></p>
+				<p>Estados de estudiante 
+					<i class="material-icons pointer" onclick="sendFile('estadosEstudiantes')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('estadosEstudiantes')">arrow_downward</i>
+				</p>
+				<p>Títulos de profesor 
+					<i class="material-icons pointer" onclick="sendFile('titulos')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('titulos')">arrow_downward</i>
+				</p>
+				<p>Tipos de exámenes 
+					<i class="material-icons pointer" onclick="sendFile('tiposExamenes')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('tiposExamenes')">arrow_downward</i>
+				</p>
+				<p>Oportunidades de clase 
+					<i class="material-icons pointer" onclick="sendFile('oportunidades')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('oportunidades')">arrow_downward</i>
+				</p>
+				<p>Niveles y grados 
+					<i class="material-icons pointer" onclick="sendFile('nivelesAcademicos')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('nivelesAcademicos')">arrow_downward</i>
+				</p>
+				<p>Modalidad estudiantes 
+					<i class="material-icons pointer" onclick="sendFile('modalidadesEstudiantes')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('modalidadesEstudiantes')">arrow_downward</i>
+				</p>
+				<p>Tipos plan especialidad 
+					<i class="material-icons pointer" onclick="sendFile('tiposPlanesEspecialidades')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('tiposPlanesEspecialidades')">arrow_downward</i>
+				</p>
 			</div>
 			<form action="#">
 		    <div class="file-field input-field">
 		      <div class="btn">
 		        <span>File</span>
-		        <input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+		        <input type="file" id="file" accept=".xlsx, .xls, .csv"
+						>
 		      </div>
 		      <div class="file-path-wrapper">
-		        <input class="file-path validate" type="text" id="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+		        <input class="file-path validate" type="text" >
 		      </div>
 		    </div>
 		  </form>
@@ -79,19 +111,21 @@
 	function sendFile(table){
 		var data = new FormData();
 		var imagefile = document.querySelector('#file');
-		data.append("table", table);
-		data.append("excel", imagefile.files);
+		data.append("model", table);
+		data.append("excel", imagefile.files[0]);
 		data.append("_token", '{{ csrf_token() }}');
-		console.log(data);
 		axios.post('{{ route('excel.import') }}',data, {headers: {'Content-Type': 'multipart/form-data'}})
     .then(function (response) {
-        //handle success
         console.log(response);
     })
     .catch(function (response) {
-        //handle error
-        console.log(response);
+        console.log(response.response);
     });
+	}
+
+	function retrieveFile(model) {
+		const url = '{{ route('excel.export') }}'
+		window.location = url + '?model=' + model
 	}
 </script>
 @endsection

@@ -246,6 +246,7 @@ Route::group(['middleware' => ['login']], function () {
 
 		Route::prefix('excel')->group(function () {
 			Route::get('','Admin\ExcelController@index') -> name('excel');
+			Route::get('/export','Admin\ExcelController@export') -> name('excel.export');
 			Route::post('/import','Admin\ExcelController@import') -> name('excel.import');
 		});
 		

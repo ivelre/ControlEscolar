@@ -4,19 +4,37 @@ namespace App\Http\Controllers\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Estudiante;
-use App\Models\Grupo;
-use App\Models\Clase;
-use App\Models\Kardex;
-
+use Illuminate\Support\Facades\Input;
 class ExcelController extends Controller
 {
-	public function index(){
+	private $exporterService = null;
+	private $importerService = null;
+
+	public function __construct()
+    {
+		$this->exporterService = new \App\Services\FastExcelExporter();
+		#$this->exporterService = new \App\Services\ExcelExporter();
+		$this->importerService = new \App\Services\FastExcelImporter();
+    }
+
+
+	public function index()
+	{
 		return view('private.admin.excel.index');
 	}
 
-	public function import(Request $request){
-		$excel = $request->file('image');
-		dd($excel->getClientOriginalName());
+	public function export()
+	{
+		$model = Input::get('model');
+		return $this->exporterService->export($model);
+	}
+
+	public function import(Request $request)
+	{
+		$model = $request->model;
+		$file = $request->excel;
+		$result = $this->importerService->import($model, $file);
+		
+		return response()->json($result, 200);
 	}
 }
