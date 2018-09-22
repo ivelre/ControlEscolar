@@ -158,7 +158,7 @@ class ExcelImporterTest extends TestCase
     {
         $this->seed('NivelesAcademicosTableSeeder');
         $this->seed('TiposPlanesEspecialidadesTableSeeder');
-        $this->seed('ModalidadesEstudiantesTableSeeder');
+        $this->seed('ModalidadesEspecialidadesTableSeeder');
 
         $response = $this->import('especialidades.xlsx', 'especialidades');
         $response->assertOk();
@@ -172,7 +172,7 @@ class ExcelImporterTest extends TestCase
         $this->assertDatabaseHas('especialidades',['clave' => 'LPE', 'modalidad_id' => 1, 'nivel_academico_id' => 3]);
         $this->assertDatabaseHas('especialidades',['clave' => 'LAN', 'modalidad_id' => 2]);
         $this->assertDatabaseHas('especialidades',['clave' => 'LN2', 'modalidad_id' => 2]);
-        $this->assertDatabaseHas('especialidades',['clave' => 'MAA', 'modalidad_id' => 3]);
+        $this->assertDatabaseHas('especialidades',['clave' => 'MAA', 'modalidad_id' => 1]);
 
         $this->assertDatabaseHas('especialidades',['clave' => 'LF', 'tipo_plan_especialidad_id' => 3]);
         $this->assertDatabaseHas('especialidades',['clave' => 'LPN', 'tipo_plan_especialidad_id' => 2, 'nivel_academico_id' => 2]);
@@ -187,14 +187,14 @@ class ExcelImporterTest extends TestCase
     {
         $this->seed('NivelesAcademicosTableSeeder');
         $this->seed('TiposPlanesEspecialidadesTableSeeder');
-        $this->seed('ModalidadesEstudiantesTableSeeder');
+        $this->seed('ModalidadesEspecialidadesTableSeeder');
 
         $response = $this->import('especialidades_error.xlsx', 'especialidades');
         $response->assertOk();
         $response->assertJsonFragment([
             'errorCount' => 5,
             'imported' => 5
-        ]);        
+        ]);
     }
 
     /**
@@ -205,7 +205,7 @@ class ExcelImporterTest extends TestCase
     {
         $this->seed('NivelesAcademicosTableSeeder');
         $this->seed('TiposPlanesEspecialidadesTableSeeder');
-        $this->seed('ModalidadesEstudiantesTableSeeder');
+        $this->seed('ModalidadesEspecialidadesTableSeeder');
 
         $response = $this->import('especialidades_large.xlsx', 'especialidades');
         $response->assertOk();

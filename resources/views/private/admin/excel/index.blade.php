@@ -31,7 +31,7 @@
 	</div>
 	
 	<div class="row">
-		<div class="col s10 offset-s1">
+		<div class="col s4 offset-s1">
 
 			<div class="section" id="academicos">
 				<h5>Académicos</h5>
@@ -101,26 +101,90 @@
 			<div class="divider"></div>
 
 		</div>
+		<div id="results" class="col s5">
+			<div v-if="show">
+				<div class="card-panel teal lighten-2">
+					<b class="white-text">Importados: @{{ imported }}</b>
+				</div>
+				<div class="card-panel red darken-4">
+					<b class="white-text">Errores: @{{ errorCount }}</b>
+				</div>
+				<div v-if="errors.length > 50"class="card-panel yellow darken-3">
+					<b class="white-text">
+						Al parecer hubo varios errores dentro del archivo. 
+						Abre la consola (F12) para ver una lista detallada de todos ellos.
+					</b>
+				</div>
+				<table v-if="errors.length" class="striped">
+					<thead>
+						<tr>
+							<th>Fila #</th>
+							<th>Mensaje</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr v-for="error in errors.slice(0,51)">
+							<td>@{{ error.row }}</td>
+							<td>@{{ error.message }}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div v-if="loading" class="progress">
+      			<div class="indeterminate"></div>
+  			</div>
+		</div>
 	</div>
 
 @endsection
 
 @section('script')
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+<script>
+let vue = new Vue({
+	el: '#results',
+	data: {
+		errors:[],
+		imported: 0,
+		errorCount: 0,
+		show: false,
+		loading: false
+	}
+})
+</script>
 <script>
 	function sendFile(table){
+		if(vue.loading){
+			Materialize.toast('Espera a que la solicitud actual termine', 4000)
+			return
+		}
+		vue.show = false
+		vue.loading = true
 		var data = new FormData();
 		var imagefile = document.querySelector('#file');
 		data.append("model", table);
 		data.append("excel", imagefile.files[0]);
 		data.append("_token", '{{ csrf_token() }}');
-		axios.post('{{ route('excel.import') }}',data, {headers: {'Content-Type': 'multipart/form-data'}})
-    .then(function (response) {
-        console.log(response);
-    })
-    .catch(function (response) {
-        console.log(response.response);
-    });
+		
+		axios.post('{{ route('excel.import') }}', data, {
+			headers: {'Content-Type': 'multipart/form-data'},
+			onUploadProgress: progressEvent => console.log(progressEvent.loaded)
+		})
+		.then(res => {
+			console.log(res.data)
+			vue.show = true
+			vue.loading = false
+			vue.imported = res.data.imported
+			vue.errorCount = res.data.errorCount
+			vue.errors = res.data.errors
+		})
+		.catch(err => {
+			console.log(err.response)
+			vue.show = true
+			vue.loading = false
+		});
 	}
 
 	function retrieveFile(model) {

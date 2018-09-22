@@ -3,7 +3,10 @@
 namespace App\Services;
 
 use Rap2hpoutre\FastExcel\FastExcel;
+use Box\Spout\Reader\ReaderFactory;
+use Box\Spout\Common\Type;
 use App\Models\ModalidadEstudiante;
+use App\Models\ModalidadEspecialidad;
 use App\Models\NivelAcademico;
 use App\Models\TipoPlanEspecialidad;
 use App\Models\Especialidad;
@@ -87,7 +90,7 @@ class FastExcelImporter
             'dges',
             'fecha_reconocimiento',
             new Optional('descripcion'),
-            new Foreign('modalidad_id', 'modalidad_estudiante', ModalidadEstudiante::class, true),
+            new Foreign('modalidad_id', 'modalidad_especialidad', ModalidadEspecialidad::class, true),
             new Foreign('nivel_academico_id', 'nivel_academico', NivelAcademico::class, true),
             new Foreign('tipo_plan_especialidad_id', 'tipo_plan_especialidad', TipoPlanEspecialidad::class, true),
         ], Especialidad::class);
@@ -102,9 +105,11 @@ class FastExcelImporter
         foreach($fields as $item) {
             if(is_string($item)) {
                 $data[$item] = $line[$item] !== '' ? $line[$item] : null;
-            } else if($item instanceof Optional) {
+            } 
+            else if($item instanceof Optional) {
                 $data[$item->getKey()] = $item->getValue($line);
-            } else if($item instanceof Foreign) {
+            } 
+            else if($item instanceof Foreign) {
                 $data[$item->getKey()] = $item->getValue($line, $cache);
             }
         }
@@ -112,34 +117,87 @@ class FastExcelImporter
         return $data;
     }
 
-    private function importFromFile($file, array $fields, $class)
+    private function getUserMessage(string $errorCode)
     {
-        $cache = $errors = [];
-        $row = $imported = 0;
-        (new FastExcel)->import($file, function ($line) use($fields, $class, &$row, &$imported, &$errors, &$cache) {
-            $row += 1;
-            
-            # Ignore empty rows
-            if(!array_filter($line)) return;
+        switch($errorCode)
+        {
+            case '23000':   return 'Error de integridad. Verifique columnas obligatorias, valores repetidos y/o llaves fóraneas';
+            case '22007':   return 'Fecha inválida';
 
-            # Transform the row into a dictionary
-            $data = $this->getDataFromRow($line, $fields, $cache);
-            
-            try { 
-                # Save the row in the database
-                $class::create($data); 
-                $imported += 1;
-            }
-            catch(\Illuminate\Database\QueryException $e){
-                array_push($errors, 'Error de integridad en la fila #'.$row.'. '.
-                                    'Verifique columnas obligatorias, valores repetidos y/o llaves fóraneas');
-            }
-        });
+            default:        return 'Error desconocido';
+        }
+    }
 
+    private function hasRequiredHeaders($file, array $fields) 
+    {
+        $result = true;
+
+        $reader = ReaderFactory::create(Type::XLSX);
+        $reader->open($file);
+
+        $requiredColumns = array_map(function($item) {
+            return is_string($item) ?  $item : $item->getKey();
+        }, $fields);
+
+        foreach ($reader->getSheetIterator() as $sheet) {
+            foreach ($sheet->getRowIterator() as $headers) {
+                $result = sizeof(array_diff($requiredColumns, $headers)) === 0;
+                break;
+            }
+            break;
+        }
+
+        $reader->close();
+
+        return $result;
+    }
+
+    private function getStatus(array $errors, $imported) 
+    {
         return [
             'errorCount' => sizeof($errors), 
             'errors' => $errors, 
             'imported' => $imported
         ];
+    }
+
+    private function importFromFile($file, array $fields, $class)
+    {
+        $cache = $errors = [];
+        $row = $imported = 0;
+
+        /*
+        if(! $this->hasRequiredHeaders($file, $fields)) {
+            $errors = array([ 'row' => 1, 'message' => 'Formato de archivo inválido' ]);
+
+            return $this->getStatus($errors, $imported);
+        }*/
+
+        \DB::transaction(function () use($file, $fields, $class, &$row, &$imported, &$errors, &$cache) {
+            (new FastExcel)->import($file, function ($line) use($fields, $class, &$row, &$imported, &$errors, &$cache) {
+                $row += 1;
+                
+                # Ignore empty rows
+                if(!array_filter($line)) return;
+    
+                # Transform the row into a dictionary
+                $data = $this->getDataFromRow($line, $fields, $cache);
+                
+                try { 
+                    # Save the row in the database
+                    $class::create($data); 
+                    $imported += 1;
+                }
+                catch(\Illuminate\Database\QueryException $e){
+                    array_push($errors, array([
+                        'row' => $row + 1,
+                        'message' => $this->getUserMessage($e->getCode()),
+                        'sql' => $e->getMessage()
+                    ]));
+                }
+            });    
+        });
+        
+        return $this->getStatus($errors, $imported);
     }
 }
