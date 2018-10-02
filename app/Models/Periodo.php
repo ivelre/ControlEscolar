@@ -9,7 +9,7 @@ class Periodo extends Model
     protected $table = 'periodos';
     
     protected $fillable = [
-    	'anios','periodo','reconocimiento_oficial','dges','fecha_reconocimiento'
+    	'anio','periodo','reconocimiento_oficial','dges','fecha_reconocimiento', 'jefe_control', 'director'
     ];
 
     public $timestamps = false;

@@ -13,6 +13,7 @@ use App\Models\Oportunidad;
 use App\Models\TipoExamen;
 use App\Models\Titulo;
 use App\Models\Estudiante;
+use App\Models\Periodo;
 
 class FastExcelExporter
 {
@@ -38,6 +39,8 @@ class FastExcelExporter
             case 'especialidades':              return (new FastExcel(Especialidad::all()))->download($model.'.xlsx');
 
             case 'estudiantes':                 return (new FastExcel(Estudiante::all()))->download($model.'.xlsx');
+
+            case 'periodos':                    return (new FastExcel(Periodo::all()))->download($model.'.xlsx');
         }
     }
 }

@@ -66,4 +66,10 @@ class ExcelExporterTest extends TestCase
         $this->seed('EspecialidadesTableSeeder');
         $this->export('especialidades')->assertOk();
     }
+
+    public function testExportPeriodos()
+    {
+        #$this->seed('PeriodosTableSeeder');
+        $this->export('periodos')->assertOk();
+    }
 }

@@ -15,6 +15,8 @@ use App\Models\TipoExamen;
 use App\Models\Titulo;
 use App\Models\EstadoEstudiante;
 use App\Models\Asignatura;
+use App\Models\Periodo;
+
 class FastExcelImporter
 {
     public function import(string $model, $file)
@@ -38,6 +40,8 @@ class FastExcelImporter
             case 'asignaturas':                 return $this->importAsignaturas($file);
 
             case 'especialidades':              return $this->importEspecialidades($file);
+
+            case 'periodos':                    return $this->importPeriodos($file);
         }
     }
 
@@ -79,6 +83,19 @@ class FastExcelImporter
     private function importAsignaturas($file) 
     {
         return $this->importFromFile($file, ['codigo', 'asignatura', 'creditos'], Asignatura::class);
+    }
+
+    private function importPeriodos($file) 
+    {
+        return $this->importFromFile($file, [
+            'anio', 
+            'periodo', 
+            'fecha_reconocimiento', 
+            'reconocimiento_oficial', 
+            'dges',
+            new Optional('jefe_control'),
+            new Optional('director')
+        ], Periodo::class);
     }
 
     private function importEspecialidades($file)
@@ -189,11 +206,11 @@ class FastExcelImporter
                     $imported += 1;
                 }
                 catch(\Illuminate\Database\QueryException $e){
-                    array_push($errors, array([
+                    array_push($errors, [
                         'row' => $row + 1,
                         'message' => $this->getUserMessage($e->getCode()),
                         'sql' => $e->getMessage()
-                    ]));
+                    ]);
                 }
             });    
         });

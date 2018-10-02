@@ -154,6 +154,35 @@ class ExcelImporterTest extends TestCase
         ]);
     }
 
+    public function testImportPeriodos()
+    {
+        $response = $this->import('periodos.xlsx', 'periodos');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 0,
+            'imported' => 49
+        ]);
+
+        $this->assertDatabaseHas('periodos',[
+            'periodo' => '08/1',
+            'reconocimiento_oficial' => 'JULIO-DICIEMBRE 2007',
+            'director' => 'LIC. SILVIA MACIAS SALINAS'
+        ]);
+
+        $this->assertDatabaseHas('periodos',[
+            'anio' => '2000',
+            'fecha_reconocimiento' => '1994-08-01',
+            'jefe_control' => 'N/A'
+        ]);
+
+        $this->assertDatabaseHas('periodos',[
+            'periodo' => '95/2',
+            'dges' => 'ENERO-JUNIO 1995',
+            'jefe_control' => 'C. MA. JAQUELINE SANCHEZ GONZALEZ',
+            'director' => 'LIC. LUIS JUAN CARLOS GUEVARA HERNANDEZ'
+        ]);
+    }
+
     public function testImportEspecialidades()
     {
         $this->seed('NivelesAcademicosTableSeeder');

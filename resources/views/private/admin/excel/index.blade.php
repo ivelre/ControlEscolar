@@ -48,6 +48,10 @@
 					<i class="material-icons pointer" onclick="sendFile('especialidades')">arrow_upward</i>
 					<i class="material-icons pointer" onclick="retrieveFile('especialidades')">arrow_downward</i>
 				</p>
+				<p>Periodos
+					<i class="material-icons pointer" onclick="sendFile('periodos')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('periodos')">arrow_downward</i>
+				</p>
 				<p>Planes especialidad
 					<i class="material-icons pointer" onclick="sendFile(9)">arrow_upward</i>
 					<i class="material-icons pointer">arrow_downward</i>
