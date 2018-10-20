@@ -12,9 +12,8 @@ class ExcelController extends Controller
 
 	public function __construct()
     {
-		$this->exporterService = new \App\Services\FastExcelExporter();
-		#$this->exporterService = new \App\Services\ExcelExporter();
-		$this->importerService = new \App\Services\FastExcelImporter();
+		$this->exporterService = new \App\Services\Excel\FastExcelExporter();
+		$this->importerService = new \App\Services\Excel\FastExcelImporter();
     }
 
 

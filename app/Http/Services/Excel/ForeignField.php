@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Excel;
 
-class Foreign
+class ForeignField
 {
     private $foreignColumn = null;
     private $secondaryForeignColumn = null;
@@ -34,7 +34,7 @@ class Foreign
         $secondaryForeignColumn = $this->secondaryForeignColumn;
         $class = $this->class;
         $foreignKey = $row[$this->foreignColumn];
-        $foreignAux = $row[$secondaryForeignColumn];
+        $foreignAux = $row[$secondaryForeignColumn] ?? null;
         
         # Check if the foreign key is already present in the row
         if($foreignKey) return $foreignKey;

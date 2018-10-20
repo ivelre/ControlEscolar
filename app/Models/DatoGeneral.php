@@ -9,7 +9,7 @@ class DatoGeneral extends Model
     protected $table = 'datos_generales';
     
     protected $fillable = [
-    	'curp','nombre','apaterno','amaterno','fecha_nacimiento','calle_numero','colonia','localidad_id','telefono_personal','telefono_casa','estado_civil_id','sexo','fecha_registro','nacionalidad_id','email','foto'
+    	'curp','nombre','apaterno','amaterno','fecha_nacimiento','calle_numero','colonia','codigo_postal','localidad_id','telefono_personal','telefono_casa','estado_civil_id','sexo','fecha_registro','nacionalidad_id','email','foto'
     ];
 
     public $timestamps = false;

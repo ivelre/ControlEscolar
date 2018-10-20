@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Excel;
 
-class Optional
+class OptionalField
 {
     private $key = null;
     private $default = null;

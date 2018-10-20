@@ -35,6 +35,10 @@
 
 			<div class="section" id="academicos">
 				<h5>Académicos</h5>
+				<p>Docentes 
+					<i class="material-icons pointer" onclick="sendFile('docentes')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('docentes')">arrow_downward</i>
+				</p>
 			</div>
 			<div class="divider"></div>
 
@@ -89,6 +93,10 @@
 					<i class="material-icons pointer" onclick="sendFile('tiposPlanesEspecialidades')">arrow_upward</i>
 					<i class="material-icons pointer" onclick="retrieveFile('tiposPlanesEspecialidades')">arrow_downward</i>
 				</p>
+				<p>Estados Civiles 
+					<i class="material-icons pointer" onclick="sendFile('estadosCiviles')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('estadosCiviles')">arrow_downward</i>
+				</p>
 			</div>
 			<form action="#">
 		    <div class="file-field input-field">
@@ -119,21 +127,13 @@
 						Abre la consola (F12) para ver una lista detallada de todos ellos.
 					</b>
 				</div>
-				<table v-if="errors.length" class="striped">
-					<thead>
-						<tr>
-							<th>Fila #</th>
-							<th>Mensaje</th>
-						</tr>
-					</thead>
-
-					<tbody>
-						<tr v-for="error in errors.slice(0,51)">
-							<td>@{{ error.row }}</td>
-							<td>@{{ error.message }}</td>
-						</tr>
-					</tbody>
-				</table>
+				
+				<ul class="collapsible" v-show="errors.length" >
+					<li v-for="(error,i) in errors.slice(0,51)">
+						<div class="collapsible-header" @click="toggle(i)">Fila #@{{ error.row }}: @{{ error.message }}</div>
+						<div class="collapsible-body"><span>@{{ error.sql }}</span></div>
+					</li>
+				</ul>
 			</div>
 			<div v-if="loading" class="progress">
       			<div class="indeterminate"></div>
@@ -155,6 +155,9 @@ let vue = new Vue({
 		errorCount: 0,
 		show: false,
 		loading: false
+	},
+	methods:{
+		toggle: i => $('.collapsible').collapsible('open', i)
 	}
 })
 </script>

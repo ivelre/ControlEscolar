@@ -13,7 +13,7 @@ class ExcelImporterTest extends TestCase
     private $filePath = __DIR__.'/../files/';
 
     private function import($file, $model) {
-        $user = factory(\App\Models\Usuario::class)->create();
+        $user = factory(\App\Models\Usuario::class)->create(['id' => 0]);
         $file = new UploadedFile($this->filePath.$file, true);
         
         $response = $this->withSession(['usuario' => $user])
@@ -68,6 +68,22 @@ class ExcelImporterTest extends TestCase
         $this->assertDatabaseHas('tipos_planes_especialidades',['tipo_plan_especialidad' => 'Trimestral']);
         $this->assertDatabaseHas('tipos_planes_especialidades',['tipo_plan_especialidad' => 'Cuatrimestral']);
         $this->assertDatabaseHas('tipos_planes_especialidades',['tipo_plan_especialidad' => 'Anual']);
+    }
+
+    public function testImportEstadosCiviles()
+    {
+        $response = $this->import('estadosCiviles.xlsx', 'estadosCiviles');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 0,
+            'imported' => 5
+        ]);
+
+        $this->assertDatabaseHas('estados_civiles',['estado_civil' => 'Casado']);
+        $this->assertDatabaseHas('estados_civiles',['estado_civil' => 'Divorciado']);
+        $this->assertDatabaseHas('estados_civiles',['estado_civil' => 'Otro']);
+        $this->assertDatabaseHas('estados_civiles',['estado_civil' => 'Soltero']);
+        $this->assertDatabaseHas('estados_civiles',['estado_civil' => 'Viudo']);
     }
 
     public function testImportNivelesAcademicos()
@@ -212,7 +228,112 @@ class ExcelImporterTest extends TestCase
         $this->assertDatabaseHas('especialidades',['clave' => 'LD3', 'nivel_academico_id' => 1]);
     }
 
-    public function testImportEspecialidadeseError()
+    public function testImportDocentes()
+    {
+        $this->seed('TitulosTableSeeder');
+        $this->seed('NacionalidadesTableSeeder');
+        $this->seed('EstadosCivilesTableSeeder');
+
+        $response = $this->import('docentes.xlsx', 'docentes');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 0,
+            'imported' => 30
+        ]);
+
+        $this->assertDatabaseHas('usuarios',['email' => '125@unitesba.edu.mx']);
+        $this->assertDatabaseHas('usuarios',['email' => '111@unitesba.edu.mx']);
+        $this->assertDatabaseHas('usuarios',['email' => '140@unitesba.edu.mx']);
+
+        $this->assertDatabaseHas('datos_generales',[
+            'curp' => 'LPCA', 
+            'telefono_casa' => '61 3 66 05', 
+            'telefono_personal' => '461 182 37 10', 
+            'fecha_registro' => '1970-01-01',     
+            'sexo' => 'O',
+            'estado_civil_id' => 2, # Married
+            'nacionalidad_id' => 48 # Spanish nationality
+        ]);
+        $this->assertDatabaseHas('datos_generales',[
+            'curp' => 'HRLO', 
+            'fecha_nacimiento' => '1899-11-30', 
+            'calle_numero' => 'Antonio García Cubas', 
+            'colonia' => 'Alfredo V. Bonfil', 
+            'codigo_postal' => 38050, 
+            'localidad_id' => 94493,
+            'estado_civil_id' => 1, # Single
+            'nacionalidad_id' => 104 # Mexican nationality
+        ]);
+        $this->assertDatabaseHas('datos_generales',[
+            'curp' => 'CAPG', 
+            'nombre' => 'GERARDO', 
+            'apaterno' => 'CALDERA', 
+            'estado_civil_id' => 3, # Divorced
+            'sexo' => 'M',
+            'nacionalidad_id' => 115 # American nationality
+        ]);
+
+        $this->assertDatabaseHas('docentes',[
+            'codigo' => '10', 
+            'rfc' => 'HRMU', 
+            'dato_general_id' => 10, 
+            'usuario_id' => 10,
+            'titulo_id' => 2 # Master
+        ]);
+        $this->assertDatabaseHas('docentes',[
+            'codigo' => '7', 
+            'rfc' => 'LPCA', 
+            'dato_general_id' => 7, 
+            'usuario_id' => 7,
+            'titulo_id' => 1, # Bachelor 
+        ]);
+        $this->assertDatabaseHas('docentes',[
+            'codigo' => '15', 
+            'rfc' => null, 
+            'dato_general_id' => 15, 
+            'usuario_id' => 15,
+            'titulo_id' => 3, # PhD
+        ]);
+        $this->assertDatabaseHas('docentes',[
+            'codigo' => '1', 
+            'dato_general_id' => 1,
+            'usuario_id' => 1,
+            'titulo_id' => 2 # Master
+        ]);
+    }
+
+    public function testImportDocentesError()
+    {
+        $this->seed('TitulosTableSeeder');
+        $this->seed('NacionalidadesTableSeeder');
+        $this->seed('EstadosCivilesTableSeeder');
+
+        $response = $this->import('docentes_error.xlsx', 'docentes');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 10,
+            'imported' => 20
+        ]);
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'CAPG']); # Inexistent degree
+        $this->assertDatabaseMissing('usuarios', ['email' => '140@unitesba.edu.mx']);
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'TRRE']); # Repeated code
+        $this->assertDatabaseMissing('usuarios', ['email' => '116@unitesba.edu.mx']);
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'HRMU']); # Empty code
+        $this->assertDatabaseMissing('usuarios', ['email' => '120@unitesba.edu.mx']);
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'MRLA']); # Empty locality id
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'MANC']); # # Empty birthdate
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'GAME']); # Empty sex
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'AGMF']); # Empty email
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'ARMO']); # Empty password
+        $this->assertDatabaseMissing('datos_generales', ['curp' => 'BAGF']); # Repeated email
+        $this->assertDatabaseMissing('datos_generales', ['nombre' => 'DAVID', 'apaterno' => 'GARCIA', 'amaterno' => 'AGUIRRE']); # Empty curp
+        
+        $this->assertTrue(\App\Models\DatoGeneral::count() === 20);
+        $this->assertTrue(\App\Models\Usuario::count() === 21); # 1 extra user needed to authenticate the API calls
+        $this->assertTrue(\App\Models\Docente::count() === 20);
+    }
+
+    public function testImportEspecialidadesError()
     {
         $this->seed('NivelesAcademicosTableSeeder');
         $this->seed('TiposPlanesEspecialidadesTableSeeder');
