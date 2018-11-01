@@ -24,6 +24,13 @@ use App\Models\Localidad;
 use App\Models\Nacionalidad;
 use App\Models\EstadoCivil;
 
+use App\Models\MedioEnterado;
+use App\Models\Clase;
+use App\Models\Grupo;
+use App\Models\Reticula;
+use App\Models\PlanEspecialidad;
+use App\Models\Estudiante;
+use App\Models\Kardex;
 class FastExcelImporter extends Importer
 {
     public function import(string $model, $file)
@@ -52,9 +59,124 @@ class FastExcelImporter extends Importer
 
             case 'docentes':                    return $this->importDocentes($file);
 
-            case 'estadosCiviles':             return $this->importEstadosCiviles($file);
+            case 'estadosCiviles':              return $this->importEstadosCiviles($file);
+
+            case 'mediosEnterados':             return $this->importMediosEnterados($file);
+
+            case 'planesEspecialidades':        return $this->importPlanesEspecialidades($file);
+            
+            case 'reticulas':                   return $this->importReticulas($file);
+
+            case 'clases':                   return $this->importClases($file);
+
+            case 'grupos':                   return $this->importGrupos($file);
+
+            case 'kardex':                   return $this->importKardex($file);
+
+            case 'estudiantes':                   return $this->importEstudiantes($file);
         }
     }
+    private function importMediosEnterados($file)
+    {
+        return $this->importManyFromFile($file, MedioEnterado::class, ['medio_enterado', new OptionalField('descripcion')]);
+    }
+    private function importEstudiantes($file)
+    {
+        return $this->importManyFromFile($file,  Estudiante::class, [
+            'matricula',
+            'grupo',
+            new OptionalField('semestre'),
+            new OptionalField('semestre_disp'),
+            new OptionalField('otros'),
+            new ForeignField('especialidad_id', 'especialidad', Especialidad::class, true),
+            new ForeignField('estado_estudiante_id', 'estado_estudiante', EstadoEstudiante::class, true),
+            new ForeignField('modalidad_id', 'modalidad_estudiante', ModalidadEstudiante::class, true),
+            new ForeignField('medio_enterado_id', 'medio_enterado', MedioEnterado::class, true),
+            new ForeignField('periodo_id', 'periodo', Periodo::class, true),
+            new ForeignField('plan_especialidad_id', 'plan_especialidad', PlanEspecialidad::class, true),
+        ], [
+            'dato_general_id' => [
+                'class' => DatoGeneral::class,
+                'fields' => [
+                    new OptionalField('curp'),
+                    'nombre',
+                    'apaterno',
+                    'amaterno',
+                    'fecha_nacimiento',
+                    'sexo',
+                    new OptionalField('calle_numero'),
+                    new OptionalField('colonia'),
+                    new OptionalField('codigo_postal'),
+                    new OptionalField('telefono_casa'),
+                    new OptionalField('telefono_personal'),
+                    new OptionalField('fecha_registro'),
+                    new ForeignField('localidad_id', 'localidad', Localidad::class, true),
+                    new ForeignField('nacionalidad_id', 'nacionalidad', Nacionalidad::class, true),
+                    new ForeignField('estado_civil_id', 'estado_civil', EstadoCivil::class, true),
+                ]
+            ],
+            'usuario_id' => [
+                'class' => Usuario::class,
+                'fields' => [
+                    'email',
+                    'password',
+                    new OptionalField('rol_id', 1)
+                ]
+            ],
+        ]);
+    }
+
+    private function importClases($file)
+    {
+        return $this->importManyFromFile($file, Clase::class, [
+            'clase',
+            new ForeignField('asignatura_id', 'asignatura', Asignatura::class, true),
+            new ForeignField('docente_id', 'codigo', Docente::class, true),
+            new ForeignField('especialidad_id', 'especialidad', Especialidad::class, true),
+            new ForeignField('periodo_id', 'periodo', Periodo::class, true),
+        ]);
+    }
+    private function importGrupos($file)
+    {
+        return $this->importManyFromFile($file, Grupo::class, [
+            'calificacion',
+            new ForeignField('clase_id', 'clase', Clase::class, true),
+            new ForeignField('estudiante_id', 'matricula', Estudiante::class, true),
+            new ForeignField('oportunidad_id', 'oportunidad', Oportunidad::class, true),
+        ]);
+    }
+    private function importKardex($file)
+    {
+        return $this->importManyFromFile($file, Kardex::class, [
+            'calificacion',
+            new OptionalField('semestre'),
+            new ForeignField('estudiante_id', 'matricula', Estudiante::class, true),
+            new ForeignField('asignatura_id', 'asignatura', Asignatura::class, true),
+            new ForeignField('oportunidad_id', 'oportunidad', Oportunidad::class, true),
+            new ForeignField('periodo_id', 'periodo', Periodo::class, true),
+        ]);
+    }
+
+    private function importPlanesEspecialidades($file)
+    {
+        return $this->importManyFromFile($file, PlanEspecialidad::class, [
+            'plan_especialidad', 
+            'periodos',
+            new ForeignField('especialidad_id', 'especialidad', Especialidad::class, true),
+            new ForeignField('coordinador_id', 'codigo', Docente::class, true),
+            new OptionalField('descripcion')
+        ]);
+    }
+    private function importReticulas($file)
+    {
+        return $this->importManyFromFile($file, Reticula::class, [
+            new ForeignField('asignatura_id', 'asignatura', Asignatura::class, true),
+            new ForeignField('plan_especialidad_id', 'plan_especialidad', PlanEspecialidad::class, true),
+            'periodo_reticula'
+        ]);
+    }
+
+
 
     private function importTitulos($file)
     {

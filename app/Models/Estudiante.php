@@ -9,7 +9,7 @@ class Estudiante extends Model
     protected $table = 'estudiantes';
     
     protected $fillable = [
-        'dato_general_id','especialidad_id','estado_estudiante_id','matricula','semestre','grupo',',modalidad_id','medio_enterado_id','periodo_id','otros','usuario_id','plan_especialidad_id'
+        'dato_general_id','especialidad_id','estado_estudiante_id','matricula','semestre','grupo','modalidad_id','medio_enterado_id','periodo_id','otros','usuario_id','plan_especialidad_id'
     ];
 
     public $timestamps = false;

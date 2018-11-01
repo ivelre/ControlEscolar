@@ -39,6 +39,22 @@
 					<i class="material-icons pointer" onclick="sendFile('docentes')">arrow_upward</i>
 					<i class="material-icons pointer" onclick="retrieveFile('docentes')">arrow_downward</i>
 				</p>
+				<p>Estudiantes 
+					<i class="material-icons pointer" onclick="sendFile('estudiantes')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('estudiantes')">arrow_downward</i>
+				</p>
+				<p>Clases 
+					<i class="material-icons pointer" onclick="sendFile('clases')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('clases')">arrow_downward</i>
+				</p>
+				<p>Grupos 
+					<i class="material-icons pointer" onclick="sendFile('grupos')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('grupos')">arrow_downward</i>
+				</p>
+				<p>Kardex 
+					<i class="material-icons pointer" onclick="sendFile('kardex')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('kardex')">arrow_downward</i>
+				</p>
 			</div>
 			<div class="divider"></div>
 
@@ -56,9 +72,13 @@
 					<i class="material-icons pointer" onclick="sendFile('periodos')">arrow_upward</i>
 					<i class="material-icons pointer" onclick="retrieveFile('periodos')">arrow_downward</i>
 				</p>
-				<p>Planes especialidad
-					<i class="material-icons pointer" onclick="sendFile(9)">arrow_upward</i>
-					<i class="material-icons pointer">arrow_downward</i>
+				<p>Planes de Especialidades
+					<i class="material-icons pointer" onclick="sendFile('planesEspecialidades')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('planesEspecialidades')">arrow_downward</i>
+				</p>
+				<p>Retículas
+					<i class="material-icons pointer" onclick="sendFile('reticulas')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('reticulas')">arrow_downward</i>
 				</p>
 			</div>
 			<div class="divider"></div>
@@ -96,6 +116,10 @@
 				<p>Estados Civiles 
 					<i class="material-icons pointer" onclick="sendFile('estadosCiviles')">arrow_upward</i>
 					<i class="material-icons pointer" onclick="retrieveFile('estadosCiviles')">arrow_downward</i>
+				</p>
+				<p>Medios Enterados 
+					<i class="material-icons pointer" onclick="sendFile('mediosEnterados')">arrow_upward</i>
+					<i class="material-icons pointer" onclick="retrieveFile('mediosEnterados')">arrow_downward</i>
 				</p>
 			</div>
 			<form action="#">
@@ -189,8 +213,27 @@ let vue = new Vue({
 		})
 		.catch(err => {
 			console.log(err.response)
+			const errorMessage = err.response.data.message
 			vue.show = true
 			vue.loading = false
+			vue.errorCount = 1
+			vue.imported = 0
+			let error = {
+				row: 0,
+				sql: null
+			}
+			if(err.response.status === 413){
+				error.message = 'Archivo muy grande. Reduzca el número de filas e intente de nuevo.'
+			}else{
+				if(errorMessage ){
+					if(errorMessage.includes('Undefined index')){
+						error.message = 'Campos requeridos no encontrados. Verifique el nombre de las columnas en su archivo.'
+					}else if (errorMessage.includes('Maximum execution time')){
+						error.message = 'Tiempo de espera excedido. Reduzca el número de registros e intente de nuevo.'
+					}
+				}
+			}
+			vue.errors = [error]
 		});
 	}
 
