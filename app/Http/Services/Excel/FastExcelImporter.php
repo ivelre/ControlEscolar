@@ -98,7 +98,7 @@ class FastExcelImporter extends Importer
             'dato_general_id' => [
                 'class' => DatoGeneral::class,
                 'fields' => [
-                    new OptionalField('curp'),
+                    'curp',
                     'nombre',
                     'apaterno',
                     'amaterno',

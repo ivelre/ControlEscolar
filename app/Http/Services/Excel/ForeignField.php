@@ -36,8 +36,11 @@ class ForeignField
         $foreignKey = $row[$this->foreignColumn];
         $foreignAux = $row[$secondaryForeignColumn] ?? null;
         
-        # Check if the foreign key is already present in the row
-        if($foreignKey) return $foreignKey;
+        # Check if the foreign key is already present in the row and isn't empty
+        if($foreignKey !== '') return $foreignKey;
+
+        # Check if the foreign auxiliar field is present in the row and isn't empty
+        if($foreignAux === null || $foreignAux === '') return null;
 
         # Perform a reverse lookup to check if the foreign key is present in the cache
         else if(array_key_exists($secondaryForeignColumn, $cache) && 
@@ -45,6 +48,8 @@ class ForeignField
             return $cache[$secondaryForeignColumn][$foreignAux];
         }
         else {
+            # echo "\nSearching $foreignAux";
+
             # Query the database to retrieve the foreign key
             $record = $class::where($secondaryForeignColumn, $foreignAux)->first();
             $id = $record ? $record->id : null;

@@ -22,112 +22,203 @@ use App\Models\PlanEspecialidad;
 use App\Models\Grupo;
 use App\Models\Kardex;
 use App\Models\Clase;
+use Box\Spout\Writer\WriterFactory;
+use Box\Spout\Common\Type;
+
 class FastExcelExporter
 {
     public function export(string $model)
     {
         switch($model){
-            case 'titulos':                     return (new FastExcel(Titulo::all()))->download($model.'.xlsx');
+            case 'titulos':                     return $this->exportTitulos();
 
-            case 'tiposPlanesEspecialidades':   return (new FastExcel(TipoPlanEspecialidad::all()))->download($model.'.xlsx');
+            case 'tiposPlanesEspecialidades':   return $this->exportTiposPlanesEspecialidades();
 
-            case 'tiposExamenes':               return (new FastExcel(TipoExamen::all()))->download($model.'.xlsx');
+            case 'tiposExamenes':               return $this->exportTiposExamenes();
 
-            case 'oportunidades':               return (new FastExcel(Oportunidad::all()))->download($model.'.xlsx');
+            case 'oportunidades':               return $this->exportOportunidades();
 
-            case 'nivelesAcademicos':           return (new FastExcel(NivelAcademico::all()))->download($model.'.xlsx');
+            case 'nivelesAcademicos':           return $this->exportNivelesAcademicos();
 
-            case 'modalidadesEstudiantes':      return (new FastExcel(ModalidadEstudiante::all()))->download($model.'.xlsx');
+            case 'modalidadesEstudiantes':      return $this->exportModalidadesEstudiantes();
 
-            case 'estadosEstudiantes':          return (new FastExcel(EstadoEstudiante::all()))->download($model.'.xlsx');
+            case 'estadosEstudiantes':          return $this->exportEstadosEstudiantes();
 
-            case 'asignaturas':                 return (new FastExcel(Asignatura::all()))->download($model.'.xlsx');
+            case 'asignaturas':                 return $this->exportAsignaturas();
 
-            case 'especialidades':              return (new FastExcel(Especialidad::all()))->download($model.'.xlsx');
+            case 'especialidades':              return $this->exportEspecialidades();
 
-            case 'periodos':                    return (new FastExcel(Periodo::all()))->download($model.'.xlsx');
+            case 'periodos':                    return $this->exportPeriodos();
 
-            case 'estadosCiviles':              return (new FastExcel(EstadoCivil::all()))->download($model.'.xlsx');
+            case 'estadosCiviles':              return $this->exportEstadosCiviles();
 
-            case 'mediosEnterados':             return (new FastExcel(MedioEnterado::all()))->download($model.'.xlsx');
+            case 'mediosEnterados':             return $this->exportMediosEnterados();
 
-            case 'planesEspecialidades':        return (new FastExcel(PlanEspecialidad::all()))->download($model.'.xlsx');
+            case 'planesEspecialidades':        return $this->exportPlanesEspecialidades();
 
-            case 'reticulas':                   return (new FastExcel(Reticula::all()))->download($model.'.xlsx');
+            case 'reticulas':                   return $this->exportReticulas();
             
-            case 'grupos':                      return (new FastExcel(Grupo::all()))->download($model.'.xlsx');
+            case 'grupos':                      return $this->exportGrupos();
 
-            case 'clases':                      return (new FastExcel(Clase::all()))->download($model.'.xlsx');
+            case 'clases':                      return $this->exportClases();
 
-            case 'kardex':                      return (new FastExcel(Kardex::get()))->download($model.'.xlsx');
+            case 'kardex':                      return $this->exportKardex();
 
-            case 'estudiantes': 
-            return (new FastExcel(Estudiante::with(['dato_general', 'usuario'])->get()))->download("$model.xlsx", function ($estudiante) {
-                return [
-                    'id' => $estudiante->id,
-                    'matricula' => $estudiante->matricula,
-                    'curp' => $estudiante->curp,
-                    'titulo_id' => $estudiante->titulo_id,
+            case 'estudiantes':                 return $this->exportEstudiantes();
 
-                    'nombre' => $estudiante->dato_general->nombre,
-                    'apaterno' => $estudiante->dato_general->apaterno,
-                    'amaterno' => $estudiante->dato_general->amaterno,
-                    'fecha_nacimiento' => $estudiante->dato_general->fecha_nacimiento,
-                    'calle_numero' => $estudiante->dato_general->calle_numero,
-                    'colonia' => $estudiante->dato_general->colonia,
-                    'codigo_postal' => $estudiante->dato_general->codigo_postal,
-                    'localidad_id' => $estudiante->dato_general->localidad_id,
-                    'telefono_casa' => $estudiante->dato_general->telefono_casa,
-                    'telefono_personal' => $estudiante->dato_general->telefono_personal,
-                    'estado_civil_id' => $estudiante->dato_general->estado_civil_id,
-                    'sexo' => $estudiante->dato_general->sexo,
-                    'fecha_registro' => $estudiante->dato_general->fecha_registro,
-                    'nacionalidad_id' => $estudiante->dato_general->nacionalidad_id,
-
-                    'email' => $estudiante->usuario->email,
-                    'password' => $estudiante->usuario->password,
-
-                    'especialidad_id' => $estudiante->especialidad_id,
-                    'semestre' => $estudiante->semestre,
-                    'semestre_disp' => $estudiante->semestre_disp,
-                    'grupo' => $estudiante->grupo,
-                    'modalidad_id' => $estudiante->modalidad_id,
-                    'medio_enterado_id' => $estudiante->medio_enterado_id,
-                    'periodo_id' => $estudiante->periodo_id,
-                    'otros' => $estudiante->otros,
-                    'estado_estudiante_id' => $estudiante->estado_estudiante_id,
-                    'plan_especialidad_id' => $estudiante->plan_especialidad_id,
-                ];
-            });
-
-            case 'docentes':
-            return (new FastExcel(Docente::with(['dato_general', 'usuario'])->get()))->download("$model.xlsx", function ($docente) {
-                return [
-                    'id' => $docente->id,
-                    'codigo' => $docente->codigo,
-                    'rfc' => $docente->rfc,
-                    'titulo_id' => $docente->titulo_id,
-
-                    'curp' => $docente->dato_general->curp,
-                    'nombre' => $docente->dato_general->nombre,
-                    'apaterno' => $docente->dato_general->apaterno,
-                    'amaterno' => $docente->dato_general->amaterno,
-                    'fecha_nacimiento' => $docente->dato_general->fecha_nacimiento,
-                    'calle_numero' => $docente->dato_general->calle_numero,
-                    'colonia' => $docente->dato_general->colonia,
-                    'codigo_postal' => $docente->dato_general->codigo_postal,
-                    'localidad_id' => $docente->dato_general->localidad_id,
-                    'telefono_casa' => $docente->dato_general->telefono_casa,
-                    'telefono_personal' => $docente->dato_general->telefono_personal,
-                    'estado_civil_id' => $docente->dato_general->estado_civil_id,
-                    'sexo' => $docente->dato_general->sexo,
-                    'fecha_registro' => $docente->dato_general->fecha_registro,
-                    'nacionalidad_id' => $docente->dato_general->nacionalidad_id,
-
-                    'email' => $docente->usuario->email,
-                    'password' => $docente->usuario->password,
-                ];
-            });            
+            case 'docentes':                    return $this->exportDocentes();
         }
+    }
+
+    private function exportTitulos(){
+        return (new FastExcel(Titulo::all()))->download('titulos.xlsx');
+    }
+
+    private function exportTiposPlanesEspecialidades(){
+        return (new FastExcel(TipoPlanEspecialidad::all()))->download('tiposPlanesEspecialidades.xlsx');
+    }
+
+    private function exportTiposExamenes(){
+        return (new FastExcel(TipoExamen::all()))->download('tiposExamenes.xlsx');
+    }
+
+    private function exportOportunidades(){
+        return (new FastExcel(Oportunidad::all()))->download('oportunidades.xlsx');
+    }
+
+    private function exportNivelesAcademicos(){
+        return (new FastExcel(NivelAcademico::all()))->download('nivelesAcademicos.xlsx');
+    }
+
+    private function exportModalidadesEstudiantes(){
+        return (new FastExcel(ModalidadEstudiante::all()))->download('modalidadesEstudiantes.xlsx');
+    }
+
+    private function exportEstadosEstudiantes(){
+        return (new FastExcel(EstadoEstudiante::all()))->download('estadosEstudiantes.xlsx');
+    }
+
+    private function exportAsignaturas(){
+        return (new FastExcel(Asignatura::all()))->download('asignaturas.xlsx');
+    }
+
+    private function exportEspecialidades(){
+        return (new FastExcel(Especialidad::all()))->download('especialidades.xlsx');
+    }
+
+    private function exportPeriodos(){
+        return (new FastExcel(Periodo::all()))->download('periodos.xlsx');
+    }
+
+    private function exportEstadosCiviles(){
+        return (new FastExcel(EstadoCivil::all()))->download('estadosCiviles.xlsx');
+    }
+
+    private function exportMediosEnterados(){
+        return (new FastExcel(MedioEnterado::all()))->download('mediosEnterados.xlsx');
+    }
+
+    private function exportPlanesEspecialidades(){
+        return (new FastExcel(PlanEspecialidad::all()))->download('planesEspecialidades.xlsx');
+    }
+
+    private function exportReticulas(){
+        return (new FastExcel(Reticula::all()))->download('reticulas.xlsx');
+    }
+
+    private function exportGrupos(){
+        #return (new FastExcel(Grupo::all()))->download('grupos.xlsx');
+        return (new ChunkedFastExcel(Grupo::query(), 5000))->download('grupos.xlsx');    
+    }
+
+    private function exportClases(){
+        #return (new FastExcel(Clase::all()))->download('clases.xlsx');
+        return (new ChunkedFastExcel(Clase::query(), 5000))->download('clases.xlsx');    
+    }
+
+    private function exportKardex(){
+        #return (new FastExcel(Kardex::get()))->download('kardex.xlsx');
+        return (new ChunkedFastExcel(Kardex::query(), 20000))->download('kardex.xlsx');    
+    }
+
+    private function exportDocentes(){
+        $query = \DB::table('docentes')->select(
+                    'docentes.id as id',
+                    'codigo',
+                    'rfc',
+                    'titulo_id',
+                    'curp',
+                    'nombre',
+                    'apaterno',
+                    'amaterno',
+                    'fecha_nacimiento',
+                    'calle_numero',
+                    'colonia',
+                    'codigo_postal',
+                    'localidad_id',
+                    'telefono_casa',
+                    'telefono_personal',
+                    'estado_civil_id',
+                    'sexo',
+                    'fecha_registro',
+                    'nacionalidad_id',
+                    'usuarios.email as email',
+                    'password'
+                )
+                ->join('usuarios','docentes.usuario_id','=','usuarios.id')
+                ->join('datos_generales', 'docentes.dato_general_id', '=', 'datos_generales.id')
+                ->orderBy('docentes.id');
+        return (new FastExcel($query->get()))->download('docentes.xlsx');
+    }
+
+    private function exportEstudiantes(){
+        $query = \DB::table('estudiantes')->select(
+                    'estudiantes.id as id',
+                    'matricula',
+                    'curp',
+                    'nombre',
+                    'apaterno',
+                    'amaterno',
+                    'fecha_nacimiento',
+                    'calle_numero',
+                    'colonia',
+                    'codigo_postal',
+                    'localidad_id',
+                    'telefono_casa',
+                    'telefono_personal',
+                    'estado_civil_id',
+                    'sexo',
+                    'fecha_registro',
+                    'nacionalidad_id',
+                    'usuarios.email as email',
+                    'password',
+                    'especialidad_id',
+                    'semestre',
+                    'semestre_disp',
+                    'grupo',
+                    'modalidad_id',
+                    'medio_enterado_id',
+                    'periodo_id',
+                    'otros',
+                    'estado_estudiante_id',
+                    'plan_especialidad_id'
+                )
+                ->join('usuarios','estudiantes.usuario_id','=','usuarios.id')
+                ->join('datos_generales', 'estudiantes.dato_general_id', '=', 'datos_generales.id')
+                ->orderBy('estudiantes.id');
+
+        return (new ChunkedFastExcel($query, 4000))->download('estudiantes.xlsx');
+        /*
+        $writer = WriterFactory::create(Type::XLSX);
+        $writer->openToBrowser('titulos.xlsx');
+        $query->chunk(7000, function($users) use($writer){
+            foreach($users as $user) {
+                $writer->addRow((array)$user);
+            }
+        });
+        $writer->close();
+        
+        return '';
+        */
     }
 }
