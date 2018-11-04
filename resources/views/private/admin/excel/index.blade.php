@@ -229,7 +229,7 @@ let vue = new Vue({
 					if(errorMessage.includes('Undefined index')){
 						error.message = 'Campos requeridos no encontrados. Verifique el nombre de las columnas en su archivo.'
 					}else if (errorMessage.includes('Maximum execution time')){
-						error.message = 'Tiempo de espera excedido. Reduzca el número de registros e intente de nuevo.'
+						error.message = 'Tiempo de espera excedido. Reduzca el número de registros o utilice IDs explícitos e intente de nuevo.'
 					}
 				}
 			}
