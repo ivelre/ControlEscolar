@@ -199,6 +199,100 @@ class ExcelImporterTest extends TestCase
         ]);
     }
 
+    public function testImportGrupos() {
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '123']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '456']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '789']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '999']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '111']);
+        $this->seed('OportunidadesTableSeeder');
+        $response = $this->import('grupos.xlsx', 'grupos');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 10,
+            'imported' => 40
+        ]);
+    }
+
+    public function testImportClases() {
+        factory(\App\Models\Docente::class)->create(['codigo' => '123']);
+        factory(\App\Models\Docente::class)->create(['codigo' => '456']);
+        factory(\App\Models\Docente::class)->create(['codigo' => '789']);
+        factory(\App\Models\Docente::class)->create(['codigo' => '999']);
+        factory(\App\Models\Docente::class)->create(['codigo' => '111']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Cálculo']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Física']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Programación']);
+        $this->seed('EspecialidadesTableSeeder');
+        $this->seed('PeriodosTableSeeder');
+        $response = $this->import('clases.xlsx', 'clases');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 15,
+            'imported' => 35
+        ]);
+    }
+
+    public function testImportKardex() {
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '123']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '456']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '789']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '999']);
+        factory(\App\Models\Estudiante::class)->create(['matricula' => '111']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Cálculo']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Física']);
+        factory(\App\Models\Asignatura::class)->create(['asignatura' => 'Programación']);
+        $this->seed('OportunidadesTableSeeder');
+        $this->seed('PeriodosTableSeeder');
+        $response = $this->import('kardex.xlsx', 'kardex');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 10,
+            'imported' => 40
+        ]);
+    }
+    public function testImportMediosEnterados() {
+        $response = $this->import('mediosEnterados.xlsx', 'mediosEnterados');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 0,
+            'imported' => 26
+        ]);
+    }
+
+
+    public function testImportEstudiantes() {
+        $this->seed('EstadosCivilesTableSeeder');
+        $this->seed('NacionalidadesTableSeeder');
+        $this->seed('EspecialidadesTableSeeder');
+        $this->seed('ModalidadesEstudiantesTableSeeder');
+        $this->seed('MediosEnteradosTableSeeder');
+        $this->seed('PeriodosTableSeeder');
+        $this->seed('EstadosEstudiantesTableSeeder');
+        $response = $this->import('estudiantes.xlsx', 'estudiantes');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 0,
+            'imported' => 50
+        ]);
+    }
+
+    public function testImportEstudiantesError() {
+        $this->seed('EstadosCivilesTableSeeder');
+        $this->seed('NacionalidadesTableSeeder');
+        $this->seed('EspecialidadesTableSeeder');
+        $this->seed('ModalidadesEstudiantesTableSeeder');
+        $this->seed('MediosEnteradosTableSeeder');
+        $this->seed('PeriodosTableSeeder');
+        $this->seed('EstadosEstudiantesTableSeeder');
+        $response = $this->import('estudiantes_error.xlsx', 'estudiantes');
+        $response->assertOk();
+        $response->assertJsonFragment([
+            'errorCount' => 28,
+            'imported' => 22
+        ]);
+    }
+
     public function testImportEspecialidades()
     {
         $this->seed('NivelesAcademicosTableSeeder');
